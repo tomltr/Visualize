@@ -1,0 +1,21 @@
+{
+  "name": "visualize",
+  "version": "1.0.0",
+  "description": "An online E-commerce application where users can produce and sell their creativity through art creation.",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev-start": "nodemon app.js"
+  },
+  "author": "Tom Tran",
+  "license": "ISC",
+  "dependencies": {
+    "bcrypt": "^3.0.6",
+    "body-parser": "^1.19.0",
+    "ejs": "^3.0.1",
+    "express": "^4.17.1",
+    "nodemon": "^2.0.2",
+    "pg": "^7.17.1",
+    "uuid": "^3.4.0"
+  }
+}
