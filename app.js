@@ -1,8 +1,12 @@
 const express = require('express');
 const body_parser = require('body-parser');
+const cookie_parser = require('cookie-parser');
 const path = require('path');
+const config = require('./config/default.json');
+const jwt = require('jsonwebtoken');
 
 const app = express();
+app.use(cookie_parser());
 
 // Salt Hashing password
 const bcrypt = require('bcrypt');
@@ -20,12 +24,48 @@ app.use(express.static(path.join(__dirname, 'public')));
 // Creating a pool connection from postgresql
 const Pool = require('pg').Pool
 const pool = new Pool({
-    user: '<user>',
-    host: '<host>',
-    database: '<database>',
-    password: '<password',
-    port: '<port>'
+    user: 'postgres_user',
+    host: 'your_host',
+    database: 'your_database',
+    password: 'your_password',
+    port: 'your port'
 });
+
+// Authentication
+const authenticated = ((req, res, next) => {
+
+    const token = req.cookies['token'];
+    //console.log(`authenticated: ${token}`);
+    if (token === undefined) {
+        res.redirect('/login');
+    }
+
+    else {
+        try {
+            const decoded = jwt.verify(token, config.secretKey);
+
+            req.user = decoded;
+            next();
+        }
+        catch (err) {
+            console.log(`404 -> Invalid token`)
+        }
+    }
+});
+
+const unauthenticated = ((req, res, next) => {
+    const token = req.cookies['token'];
+    //console.log(`unathenticated: ${token}`);
+    if (token === undefined) {
+        // console.log('good to go');
+        next();
+    }
+    else {
+        res.redirect('/');
+    }
+
+})
+
 
 // Home Page
 app.get('/', (req, res, next) => {
@@ -36,7 +76,8 @@ app.get('/', (req, res, next) => {
 });
 
 // Adding Product Page
-app.get('/add-product', (req, res, next) => {
+app.get('/add-product', authenticated, (req, res, next) => {
+    //console.log(`in add-product: ${req.get('Cookie')}`);
     res.render('add-product',
         {
             page_title: 'Add Product'
@@ -44,7 +85,7 @@ app.get('/add-product', (req, res, next) => {
 });
 
 // Visiting Login
-app.get('/login', (req, res, next) => {
+app.get('/login', unauthenticated, (req, res, next) => {
     res.render('login',
         {
             page_title: 'Login'
@@ -59,7 +100,7 @@ app.post('/login', async (req, res, next) => {
     const confirmed_data = await (request_data);
 
     if (confirmed_data.rows[0] === undefined) {
-        console.log(`not found: ${username}`);
+        //console.log(`not found: ${username}`);
         res.render('login', {
             page_title: 'Login',
             error: 'username'
@@ -68,22 +109,36 @@ app.post('/login', async (req, res, next) => {
     else {
         await bcrypt.compare(req.body.password, confirmed_data.rows[0].password, (err, result) => {
             if (!result) {
-                console.log(`password ${req.body.password} is invalid!`);
+                //console.log(`password ${req.body.password} is invalid!`);
                 res.render('login', {
                     page_title: 'Login',
                     error: 'password'
                 });
             }
             else {
-                console.log(`logging in successfully!`);
-                res.redirect('/');
+                //console.log(`logging in successfully!`);
+                jwt.sign(
+                    { id: confirmed_data.rows[0].user_id },
+                    config.secretKey,
+                    (err, token) => {
+                        if (err) throw err;
+                        res.cookie('token', token);
+                        res.redirect('/');
+                    }
+                );
             }
         });
     }
 });
 
+app.get('/logout', authenticated, (req, res, next) => {
+    res.setHeader('Set-Cookie', 'token=; max-age=0');
+    res.redirect('/');
+
+})
+
 // Visiting Register page
-app.get('/register', (req, res, next) => {
+app.get('/register', unauthenticated, (req, res, next) => {
     res.render('register',
         {
             page_title: 'Register'
@@ -108,11 +163,22 @@ app.post('/register', (req, res, next) => {
                     console.log(error);
                 }
                 console.log(results);
-                res.redirect('/');
+                res.redirect('/login');
             });
         }
     });
 
+});
+
+app.get('/invalid-request', (req, res) => {
+    res.render('400',
+        {
+            page_title: 'Page Not Found'
+        });
+});
+
+app.use('/', (req, res, next) => {
+    res.redirect('invalid-request');
 })
 
 app.listen(port);
