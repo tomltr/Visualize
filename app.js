@@ -1,9 +1,12 @@
 const express = require('express');
 const body_parser = require('body-parser');
 const cookie_parser = require('cookie-parser');
+const multer = require('multer');
+const upload = multer({ dest: 'imgs/' });
 const path = require('path');
 const config = require('./config/default.json');
 const jwt = require('jsonwebtoken');
+const uuidv4 = require('uuid/v4');
 
 const app = express();
 app.use(cookie_parser());
@@ -18,7 +21,18 @@ const port = 3000;
 app.set('view engine', 'ejs');
 app.set('views', 'views');
 
+const image_path = "./imgs";
+
 app.use(body_parser.urlencoded({ extended: false }));
+const storage = multer.diskStorage({
+    destination: (req, file, callback) => {
+        callback(null, image_path);
+    },
+    filename: (req, file, callback) => {
+        callback(null, uuidv4() + '.' + file.mimetype.split("/")[1]);
+    }
+})
+app.use(multer({ storage: storage }).single('image'));
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Creating a pool connection from postgresql
@@ -33,15 +47,16 @@ const pool = new Pool({
 
 // Authentication
 const authenticated = ((req, res, next) => {
+    //   console.log(`param: ${req.path.split('/')[1]}`);
 
     const token = req.cookies['token'];
-    //console.log(`authenticated: ${token}`);
     if (token === undefined) {
         res.redirect('/login');
     }
 
     else {
         try {
+            //   console.log('taking you to watever next');
             const decoded = jwt.verify(token, config.secretKey);
 
             req.user = decoded;
@@ -55,9 +70,7 @@ const authenticated = ((req, res, next) => {
 
 const unauthenticated = ((req, res, next) => {
     const token = req.cookies['token'];
-    //console.log(`unathenticated: ${token}`);
     if (token === undefined) {
-        // console.log('good to go');
         next();
     }
     else {
@@ -77,11 +90,31 @@ app.get('/', (req, res, next) => {
 
 // Adding Product Page
 app.get('/add-product', authenticated, (req, res, next) => {
-    //console.log(`in add-product: ${req.get('Cookie')}`);
     res.render('add-product',
         {
             page_title: 'Add Product'
         });
+});
+
+
+// Submitting new product
+app.post('/add-product', (req, res, next) => {
+
+    const artist_id = req.cookies['user_id'];
+    const product_title = req.body.title;
+    const price = req.body.price;
+    const image_path = req.file.path.split('\\')[1];
+
+    console.log(`artist_id: ${artist_id}`);
+    console.log(`product_title: ${product_title}`);
+    console.log(`price: ${price}`);
+    console.log(`image_path: ${image_path}`);
+
+    pool.query('INSERT INTO products (artist_id, product_title, price, image_path) VALUES ($1, $2, $3, $4)', [artist_id, product_title, price, image_path], (error, result) => {
+        if (error) throw error;
+        res.redirect('/');
+    });
+
 });
 
 // Visiting Login
@@ -100,7 +133,6 @@ app.post('/login', async (req, res, next) => {
     const confirmed_data = await (request_data);
 
     if (confirmed_data.rows[0] === undefined) {
-        //console.log(`not found: ${username}`);
         res.render('login', {
             page_title: 'Login',
             error: 'username'
@@ -109,20 +141,19 @@ app.post('/login', async (req, res, next) => {
     else {
         await bcrypt.compare(req.body.password, confirmed_data.rows[0].password, (err, result) => {
             if (!result) {
-                //console.log(`password ${req.body.password} is invalid!`);
                 res.render('login', {
                     page_title: 'Login',
                     error: 'password'
                 });
             }
             else {
-                //console.log(`logging in successfully!`);
                 jwt.sign(
                     { id: confirmed_data.rows[0].user_id },
                     config.secretKey,
                     (err, token) => {
                         if (err) throw err;
                         res.cookie('token', token);
+                        res.cookie('user_id', confirmed_data.rows[0].user_id);
                         res.redirect('/');
                     }
                 );
@@ -132,7 +163,8 @@ app.post('/login', async (req, res, next) => {
 });
 
 app.get('/logout', authenticated, (req, res, next) => {
-    res.setHeader('Set-Cookie', 'token=; max-age=0');
+    res.clearCookie('token');
+    res.clearCookie('user_id');
     res.redirect('/');
 
 })
@@ -162,8 +194,7 @@ app.post('/register', (req, res, next) => {
                 if (error) {
                     console.log(error);
                 }
-                console.log(results);
-                res.redirect('/login');
+                res.redirect('/');
             });
         }
     });
@@ -177,8 +208,5 @@ app.get('/invalid-request', (req, res) => {
         });
 });
 
-app.use('/', (req, res, next) => {
-    res.redirect('invalid-request');
-})
 
 app.listen(port);
