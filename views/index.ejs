@@ -5,6 +5,34 @@
     <%- include('includes/navigation.ejs') %>
     <main>
         <h1>Hi from index</h1>
+        <div class="product-list">
+
+            <% for (let product of products) { %>
+
+            <h2><%= product.product_title %></h2>
+            <div>
+                <img src="../imgs/<%= product.image_path %>" width="250px" height="250px"
+                    alt="<%= product.product_title %>">
+            </div>
+
+            <div class="cart-item">
+                <%= product.price %>
+
+                <form action="/add-to-cart" method="POST"
+                    onclick="add_to_cart('<%= current_user %>', '<%= product.product_title %>')">
+                    <input type="hidden" name="current_id" id="current_id" value="<%= current_user %>">
+                    <input type="hidden" name="cart_item_title" id="cart_item_title"
+                        value="<%= product.product_title %>">
+                    <input type="hidden" name="cart_item_image_path" id="cart_item_image_path"
+                        value="<%= product.image_path %>">
+                    <input type="hidden" name="cart_item_price" id="cart_item_price" value="<%= product.price %>">
+                    <button type="submit">Add To Cart</button>
+
+                </form>
+
+            </div>
+            <% } %>
+        </div>
     </main>
 
     <%- include('includes/end.ejs') %>

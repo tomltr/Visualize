@@ -2,11 +2,12 @@ const express = require('express');
 const body_parser = require('body-parser');
 const cookie_parser = require('cookie-parser');
 const multer = require('multer');
-const upload = multer({ dest: 'imgs/' });
 const path = require('path');
 const config = require('./config/default.json');
 const jwt = require('jsonwebtoken');
 const uuidv4 = require('uuid/v4');
+
+const pool = require('./util/database');
 
 const app = express();
 app.use(cookie_parser());
@@ -21,33 +22,42 @@ const port = 3000;
 app.set('view engine', 'ejs');
 app.set('views', 'views');
 
-const image_path = "./imgs";
+const public_images = "./public/imgs";
 
 app.use(body_parser.urlencoded({ extended: false }));
 const storage = multer.diskStorage({
     destination: (req, file, callback) => {
-        callback(null, image_path);
+        callback(null, public_images);
     },
     filename: (req, file, callback) => {
         callback(null, uuidv4() + '.' + file.mimetype.split("/")[1]);
     }
-})
-app.use(multer({ storage: storage }).single('image'));
-app.use(express.static(path.join(__dirname, 'public')));
-
-// Creating a pool connection from postgresql
-const Pool = require('pg').Pool
-const pool = new Pool({
-    user: 'postgres_user',
-    host: 'your_host',
-    database: 'your_database',
-    password: 'your_password',
-    port: 'your port'
 });
+
+const image_filter = (req, file, callback) => {
+    if (file.mimetype === 'image/png' || file.mimetype === 'image/jpg' || file.mimetype === 'image/jpeg') {
+        callback(null, true);
+    }
+    else {
+        callback(null, false);
+    }
+}
+
+const multer_object =
+{
+    storage: storage,
+    fileFilter: image_filter,
+    limits:
+    {
+        fileSize: 1 * 1024 * 1024
+    }
+};
+app.use(express.static(path.join(__dirname, 'public')));
+app.use(multer(multer_object).single('image'));
+
 
 // Authentication
 const authenticated = ((req, res, next) => {
-    //   console.log(`param: ${req.path.split('/')[1]}`);
 
     const token = req.cookies['token'];
     if (token === undefined) {
@@ -56,7 +66,6 @@ const authenticated = ((req, res, next) => {
 
     else {
         try {
-            //   console.log('taking you to watever next');
             const decoded = jwt.verify(token, config.secretKey);
 
             req.user = decoded;
@@ -80,13 +89,20 @@ const unauthenticated = ((req, res, next) => {
 })
 
 
-// Home Page
+// Home Page listing all products
 app.get('/', (req, res, next) => {
-    res.render('index',
-        {
-            page_title: 'Home'
+
+    const current_user = req.cookies['user_id'];
+    pool.query('SELECT * FROM products', (error, result) => {
+        if (error) throw error;
+        res.render('index', {
+            products: result.rows,
+            page_title: 'Home',
+            current_user: current_user
         });
+    });
 });
+
 
 // Adding Product Page
 app.get('/add-product', authenticated, (req, res, next) => {
@@ -103,18 +119,69 @@ app.post('/add-product', (req, res, next) => {
     const artist_id = req.cookies['user_id'];
     const product_title = req.body.title;
     const price = req.body.price;
-    const image_path = req.file.path.split('\\')[1];
+    const image_path = req.file.path.split('\\')[2];
 
-    console.log(`artist_id: ${artist_id}`);
-    console.log(`product_title: ${product_title}`);
-    console.log(`price: ${price}`);
-    console.log(`image_path: ${image_path}`);
+    req.file.size += 10000;
 
     pool.query('INSERT INTO products (artist_id, product_title, price, image_path) VALUES ($1, $2, $3, $4)', [artist_id, product_title, price, image_path], (error, result) => {
         if (error) throw error;
         res.redirect('/');
     });
 
+});
+
+// add item to cart upon clicking the button
+app.post('/add-to-cart', authenticated, (req, res, next) => {
+
+
+    // check if a cart exist with the current user
+    let cart_id = req.cookies['cart_id'];
+
+    if (cart_id) {
+        console.log('Cart existed');
+    }
+    else {
+        console.log('No cart existed');
+        cart_id = uuidv4();
+        pool.query('INSERT INTO cart (cart_id, user_id) VALUES ($1, $2)', [cart_id, req.cookies['user_id']], (error, result) => {
+            if (error) throw error;
+            //console.log(result);
+        });
+        res.cookie('cart_id', cart_id);
+    }
+
+    const cart_item_title = req.body.cart_item_title;
+    const cart_item_image_path = req.body.cart_item_image_path;
+    const cart_item_price = req.body.cart_item_price;
+
+    let found_item;
+
+    pool.query('SELECT * FROM cart_item WHERE cart_item.cart_item_name=$1', [cart_item_title], (error, result) => {
+        if (error) throw error;
+
+        // update found_item if item already existed
+        console.log(`rowCount: ${result.rowCount}`);
+        if (result.rowCount === 1) {
+            found_item = result.rows[0].cart_item_id;
+            console.log(`found_item ${found_item}`);
+        }
+
+        // if item already in cart, increase quantity by one
+        if (found_item) {
+            pool.query('UPDATE cart_item SET quantity=quantity + 1.00 WHERE cart_item_id=$1', [found_item], (another_error, another_result) => {
+                if (another_error) throw another_error;
+            });
+        }
+        // add new item to cart
+        else {
+            const new_quantity = 1;
+            pool.query('INSERT INTO cart_item (cart_item_name, cart_item_image, price, quantity, cart_id) VALUES($1, $2, $3, $4, $5)', [cart_item_title, cart_item_image_path, parseFloat(cart_item_price), new_quantity, cart_id], (error, result) => {
+                if (error) throw error;
+            });
+
+        }
+    });
+    res.redirect('/');
 });
 
 // Visiting Login
