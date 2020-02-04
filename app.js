@@ -103,6 +103,160 @@ app.get('/', (req, res, next) => {
     });
 });
 
+// Go to Cart
+app.get('/cart', authenticated, (req, res, next) => {
+    //const cart_id = req.cookies['cart_id'];
+    const current_user = req.cookies['user_id'];
+    let cart_id;
+    pool.query('SELECT * FROM cart WHERE user_id=$1', [current_user], (error, result) => {
+        if (error) throw error;
+        if (result.rowCount > 0) {
+            cart_id = result.rows[0].cart_id;
+        };
+
+        let cart_exist;
+        let total = 0.00;
+        if (cart_id) {
+            cart_exist = true;
+            pool.query('SELECT cart_id, cart_item.product_id, product_title, price, image_path, quantity FROM cart_item, products WHERE cart_item.cart_id = $1 AND cart_item.product_id = products.product_id;', [cart_id], (error_item, result_item) => {
+                if (error_item) throw error_item;
+                const cart_items = result_item.rows;
+                for (let i = 0; i < result_item.rowCount; ++i) {
+                    total += result_item.rows[i].price * result_item.rows[i].quantity;
+                }
+                console.log(`current_user: ${current_user}`);
+
+                res.render('cart',
+                    {
+                        cart_exist: cart_exist,
+                        cart_items: result_item.rows,
+                        page_title: 'Cart',
+                        current_user: current_user,
+                        total: parseFloat(total).toFixed(2)
+                    });
+            });
+        }
+        else {
+            res.render('cart',
+                {
+                    page_title: 'Cart',
+                    cart_exist: cart_exist,
+                    total: parseFloat(total).toFixed(2)
+                });
+        }
+    });
+});
+
+app.post('/cart', (req, res, next) => {
+    const updated_quantity = req.body.cart_item_quantity;
+    const product_id = req.body.product_id;
+    console.log(`user: ${req.body.current_user}`);
+    console.log(`product_id: ${product_id}`);
+    // console.log(`updated_quantity for ${req.body.cart_item_title}: ${updated_quantity}`);
+    pool.query('UPDATE cart_item SET quantity=$1 WHERE product_id=$2', [updated_quantity, product_id], (error, result) => {
+        if (error) throw error;
+        res.redirect('/cart');
+    });
+});
+
+app.get('/order_form', authenticated, (req, res, next) => {
+    const id = req.cookies['user_id'];
+
+    pool.query('SELECT * FROM cart WHERE user_id=$1', [id], (error, result) => {
+        if (error) throw error;
+
+        const cart_id = result.rows[0].cart_id;
+
+        pool.query('SELECT * FROM cart_item WHERE cart_id=$1', [cart_id], (cart_error, cart_result) => {
+            if (cart_error) throw cart_error;
+
+            let total = 0;
+            for (let i = 0; i < cart_result.rowCount; ++i) {
+                total += cart_result.rows[i].price * cart_result.rows[i].quantity;
+            }
+            res.render('order_form', {
+                page_title: 'Order Form',
+                cart_items: cart_result.rows,
+                total: parseFloat(total).toFixed(2),
+                current_user: id
+
+            });
+        });
+    });
+});
+
+app.post('/order_form', (req, res, next) => {
+    console.log(`user post order_form: ${req.body.user}`);
+    console.log(`cart_id: ${req.body.cart_id}`);
+    console.log(`payment_method: ${req.body.payment_method}`);
+    console.log(`card_number: ${req.body.credit_card_number}`);
+    console.log(`total: ${req.body.total}`);
+
+    const user_id = req.body.user;
+    const payment_method = req.body.payment_method;
+    const card_number = req.body.credit_card_number;
+    const total = req.body.total;
+    const cart_id = req.body.cart_id;
+
+
+    pool.query('INSERT INTO orders (user_id, payment_method, card_number, total) VALUES($1, $2, $3, $4)', [user_id, payment_method, card_number, total],
+        (error, result) => {
+            if (error) throw error;
+
+            // pool.query('SELECT * FROM cart_item WHERE cart_id=$1', [cart_id], (cart_error, cart_result) =>
+            // {
+            //     if (cart_error) throw cart_error;
+
+            //     for(let i = 0; i < cart_result.rowCount; ++i)
+            //     {
+            //         pool.query('INSERT INTO order_item (order_id, product_id, ')
+            //     }
+            // });
+
+            // pool.query('DELETE FROM cart WHERE cart_id=$1', [cart_id], (cart_error, cart_result) => {
+            //     if (cart_error) throw error;
+            //     res.redirect('/orders');
+
+            // });
+        });
+
+
+});
+
+app.get('/orders/:id', (req, res, next) => {
+    const user_id = req.params.id;
+
+    pool.query('SELECT * FROM orders WHERE order_id=$1 ORDER BY date_created', [user_id], (error, result) => {
+        if (error) throw error;
+        res.render('order',
+            {
+                orders: result.rows,
+                page_title: 'Orders'
+            });
+    });
+});
+
+app.get('/products/:id', (req, res, next) => {
+
+    console.log(`id: ${req.params.id}`);
+    const current_user = req.cookies['user_id'];
+    console.log(`user_id: ${current_user}`);
+
+    const id = req.params.id;
+    pool.query('SELECT * FROM products WHERE product_id = $1', [id], (error, result) => {
+        if (error) throw error;
+
+        const product_exists = (result.rowCount > 0) ? true : false;
+        res.render('product-info', {
+            current_user: current_user,
+            product_exists: product_exists,
+            page_title: result.rows[0].product_title,
+            product: result.rows[0]
+
+        });
+    });
+});
+
 
 // Adding Product Page
 app.get('/add-product', authenticated, (req, res, next) => {
@@ -121,8 +275,6 @@ app.post('/add-product', (req, res, next) => {
     const price = req.body.price;
     const image_path = req.file.path.split('\\')[2];
 
-    req.file.size += 10000;
-
     pool.query('INSERT INTO products (artist_id, product_title, price, image_path) VALUES ($1, $2, $3, $4)', [artist_id, product_title, price, image_path], (error, result) => {
         if (error) throw error;
         res.redirect('/');
@@ -135,6 +287,7 @@ app.post('/add-to-cart', authenticated, (req, res, next) => {
 
 
     // check if a cart exist with the current user
+    const current_user = req.body.current_user;
     let cart_id = req.cookies['cart_id'];
 
     if (cart_id) {
@@ -143,20 +296,21 @@ app.post('/add-to-cart', authenticated, (req, res, next) => {
     else {
         console.log('No cart existed');
         cart_id = uuidv4();
-        pool.query('INSERT INTO cart (cart_id, user_id) VALUES ($1, $2)', [cart_id, req.cookies['user_id']], (error, result) => {
+        pool.query('INSERT INTO cart (cart_id, user_id) VALUES ($1, $2)', [cart_id, current_user], (error, result) => {
             if (error) throw error;
             //console.log(result);
         });
         res.cookie('cart_id', cart_id);
     }
 
-    const cart_item_title = req.body.cart_item_title;
-    const cart_item_image_path = req.body.cart_item_image_path;
-    const cart_item_price = req.body.cart_item_price;
+    const product_id = req.body.product_id;
+    console.log(`user: ${current_user}`);
+    console.log(`cart_id: ${cart_id}`);
+    console.log(`product_id: ${product_id}`);
 
     let found_item;
 
-    pool.query('SELECT * FROM cart_item WHERE cart_item.cart_item_name=$1', [cart_item_title], (error, result) => {
+    pool.query('SELECT * FROM cart_item WHERE product_id=$1', [product_id], (error, result) => {
         if (error) throw error;
 
         // update found_item if item already existed
@@ -168,20 +322,20 @@ app.post('/add-to-cart', authenticated, (req, res, next) => {
 
         // if item already in cart, increase quantity by one
         if (found_item) {
-            pool.query('UPDATE cart_item SET quantity=quantity + 1.00 WHERE cart_item_id=$1', [found_item], (another_error, another_result) => {
+            pool.query('UPDATE cart_item SET quantity=quantity + 1 WHERE cart_item_id=$1', [found_item], (another_error, another_result) => {
                 if (another_error) throw another_error;
             });
         }
         // add new item to cart
         else {
             const new_quantity = 1;
-            pool.query('INSERT INTO cart_item (cart_item_name, cart_item_image, price, quantity, cart_id) VALUES($1, $2, $3, $4, $5)', [cart_item_title, cart_item_image_path, parseFloat(cart_item_price), new_quantity, cart_id], (error, result) => {
+            pool.query('INSERT INTO cart_item (product_id, quantity, cart_id) VALUES($1, $2, $3)', [product_id, new_quantity, cart_id], (error, result) => {
                 if (error) throw error;
             });
 
         }
     });
-    res.redirect('/');
+    res.redirect('back');
 });
 
 // Visiting Login
