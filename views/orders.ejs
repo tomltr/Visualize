@@ -7,46 +7,20 @@
         <h1>Hi from index</h1>
         <div class="product-list">
 
-            <% if (cart_exist ) { %>
 
-
-
-            <% for (let cart_item of cart_items ) { %>
-
-            <h2><%= cart_item.cart_item_name %></h2>
-            <div>
-                <img src="../imgs/<%= cart_item.cart_item_image %>" width="250px" height="250px"
-                    alt="<%= cart_item.cart_item_name %>">
-            </div>
-
-            <div class="cart-item">
-                <%= cart_item.price %>
-
-                <form method="POST">
-
-
-                    <input type="hidden" name="cart_item_title" id="cart_item_title"
-                        value="<%= cart_item.cart_item_name %>">
-                    <input type="hidden" name="cart_item_image_path" id="cart_item_image_path"
-                        value="<%= cart_item.cart_item_image %>">
-                    <input type="hidden" name="cart_item_price" id="cart_item_price" value="<%= cart_item.price %>">
-                    <input type="number" name="cart_item_quantity" id="cart_item_quantity"
-                        value="<%= cart_item.quantity %>">
-                    <button type="submit">Update</button>
-                </form>
-
-            </div>
-            <% } %>
-            <form method="GET" action="/order_form">
-                <input type="hidden" name="user" id="user" value="<%= current_user %>">
-                <button type="submit">Checkout</button>
+            <% for (let order of orders ) { %>
+            <h4>Id: <%= order.order_id %></h4>
+            <h4>Payment Method: <%= order.payment_method %></h4>
+            <h4>Card Number: <%= order.card_number %></h4>
+            <h4>Total: $<%= order.total %></h4>
+            <h4>Date Created: <%=order.date_created.toLocaleDateString();%></h4>
+            <form action="/order/<%=order.order_id %>" method="GET">
+                <input type="hidden" name="total" id="total" value="<%= order.total %>">
+                <button type="submit">Detail</button>
             </form>
 
-            <% } else  { %>
-            <h3>Empty Cart</h3>
             <% } %>
 
-            <h4>Total: $<%= total %></h4>
 
         </div>
     </main>

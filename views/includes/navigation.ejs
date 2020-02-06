@@ -4,9 +4,14 @@
             <li class="main-header__li"><a href="/">Home</a></li>
 
             <li class="main-header__li"><a href="/add-product">Add Product</a></li>
+            <% if (current_user ) { %>
+            <li class="main-header__li"><a href="/logout">Logout</a></li>
+            <% } else { %>
             <li class="main-header__li"><a href="/login">Login</a></li>
             <li class="main-header__li"><a href="/register">Register</a></li>
+            <% } %>
             <li class="main-header__li"><a href="/cart">Cart</a></li>
+            <li class="main-header__li"><a href="/orders">Orders</a></li>
         </ul>
     </nav>
 </header>

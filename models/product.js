@@ -1,17 +1,23 @@
 const db = require('../util/database');
 
 module.exports = class Product {
-    constructor(product_id, artist_id, product_title, price, image_path, date_created) {
-        this.product_id = product_id;
+    constructor(artist_id, product_title, price, image_path) {
         this.artist_id = artist_id;
         this.product_title = product_title;
         this.price = price;
         this.image_path = image_path;
-        this.date_created = date_created;
+    }
+
+    add_product() {
+        return db.query('INSERT INTO product (artist_id, product_title, price, image_path) VALUES($1, $2, $3, $4)', [this.artist_id, this.product_title, this.price, this.image_path]);
+    }
+
+    static get_product(id) {
+        return db.query('SELECT * FROM product WHERE product_id=$1', [id]);
     }
 
     static get_products() {
-        return db.query('SELECT * FROM products');
+        return db.query('SELECT * FROM product');
     }
 
 }

@@ -12,19 +12,14 @@
 
             <h2><%= cart_item.cart_item_name %></h2>
             <div>
-                <img src="../imgs/<%= cart_item.cart_item_image %>" width="250px" height="250px"
-                    alt="<%= cart_item.cart_item_name %>">
+                <img src="../imgs/<%= cart_item.image_path%>" width="250px" height="250px"
+                    alt="<%= cart_item.product_title %>">
             </div>
 
             <div class="cart-item">
                 Quantity: <%= cart_item.quantity %>
                 $<%= cart_item.price %>
 
-                <input type="hidden" name="cart_item_title" id="cart_item_title"
-                    value="<%= cart_item.cart_item_name %>">
-                <input type="hidden" name="cart_item_image_path" id="cart_item_image_path"
-                    value="<%= cart_item.cart_item_image %>">
-                <input type="hidden" name="cart_item_price" id="cart_item_price" value="<%= cart_item.price %>">
 
             </div>
             <% } %>
