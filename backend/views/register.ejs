@@ -1,0 +1,36 @@
+<%- include('includes/head.ejs') %>
+</head>
+
+<body>
+    <%- include('includes/navigation.ejs') %>
+    <main>
+        <h1>Hi from register</h1>
+        <form class="registration_form" method="POST">
+            <label>Full Name:</label>
+            <input type="text" name="full_name" id="full_name_input">
+            <div>
+                <label>Address:</label>
+                <input type="text" name="address" id="address_input">
+            </div>
+            <div>
+                <label>Phone Number:</label>
+                <input type="text" name="phone_number" id="phone_number_input">
+            </div>
+            <div>
+                <label>Username:</label>
+                <input type="text" name="username" id="username_input">
+                <label>Email:</label>
+                <input type="email" name="email" id="email_input">
+            </div>
+            <div>
+                <label>Password:</label>
+                <input type="password" name="password" id="password_input">
+                <label>Confirmed Password:</label>
+                <input type="password" name="confirmed_password" id="confirmed_password_input">
+            </div>
+            <button type="submit">Register</button>
+
+        </form>
+    </main>
+
+    <%- include('includes/end.ejs') %>

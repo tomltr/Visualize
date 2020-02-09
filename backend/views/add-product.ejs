@@ -1,0 +1,22 @@
+<%- include('includes/head.ejs') %>
+</head>
+
+<body>
+    <%- include('includes/navigation.ejs') %>
+    <main>
+        <h1>Hi from add-product</h1>
+
+        <form method="POST" enctype="multipart/form-data" action="/add-product">
+            <label>Title:</label>
+            <input type="text" name="title" id="title_input">
+            <label>Price:</label>
+            <input type="number" name="price" id="price_input">
+            <div>
+                <label>Image:</label>
+                <input type="file" name="image" id="image_input">
+                <button type="submit">Submit</button>
+        </form>
+
+    </main>
+
+    <%- include('includes/end.ejs') %>

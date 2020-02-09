@@ -1,0 +1,28 @@
+<%- include('includes/head.ejs') %>
+</head>
+
+<body>
+    <%- include('includes/navigation.ejs') %>
+    <main>
+        <h1>Hi from index</h1>
+        <div class="product-list">
+
+
+            <% for (let order of orders ) { %>
+            <h4>Id: <%= order.order_id %></h4>
+            <h4>Payment Method: <%= order.payment_method %></h4>
+            <h4>Card Number: <%= order.card_number %></h4>
+            <h4>Total: $<%= order.total %></h4>
+            <h4>Date Created: <%=order.date_created.toLocaleDateString();%></h4>
+            <form action="/order/<%=order.order_id %>" method="GET">
+                <input type="hidden" name="total" id="total" value="<%= order.total %>">
+                <button type="submit">Detail</button>
+            </form>
+
+            <% } %>
+
+
+        </div>
+    </main>
+
+    <%- include('includes/end.ejs') %>
