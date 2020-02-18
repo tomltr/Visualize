@@ -55,7 +55,7 @@ export default class ProductDetail extends React.Component {
                     :
                     <form onSubmit={this.addToCart}>
 
-                        <button type="submit">Add To Cart</button>
+                        <button className="btn btn-info" type="submit">Add To Cart</button>
                     </form>
                 }
             </div>

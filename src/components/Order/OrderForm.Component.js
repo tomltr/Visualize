@@ -95,21 +95,24 @@ export default class OrderForm extends React.Component {
         const total = this.state.total;
         const cartId = this.props.cart_id;
 
-        axios.post('http://localhost:5000/order_form', {
-            user: currentUser,
-            payment_method: paymentMethod.value,
-            credit_card_number: creditCardNumber,
-            total: total,
-            cart_id: cartId
-        })
-            .then(result => {
-                this.setState({ redirectToOrders: true });
-                this.props.clearCart();
-                alert(`${result.data}`);
+        if (creditCardNumber) {
+            axios.post('http://localhost:5000/order_form', {
+                user: currentUser,
+                payment_method: paymentMethod.value,
+                credit_card_number: creditCardNumber,
+                total: total,
+                cart_id: cartId
             })
-            .catch(error => {
-                if (error) throw error;
-            });
+                .then(result => {
+                    this.setState({ redirectToOrders: true });
+                    this.props.clearCart();
+                    alert(`${result.data}`);
+                })
+                .catch(error => {
+                    if (error) throw error;
+                });
+        }
+
 
     }
 
