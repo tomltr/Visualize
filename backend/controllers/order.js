@@ -62,8 +62,7 @@ exports.post_order_form = (req, res, next) => {
                     // delete cart and clear cart cookie after adding all cart items
                     Cart.delete_cart(cart_id)
                         .then(() => {
-                            res.clearCookie('cart_id');
-                            res.redirect('/orders');
+                            res.json('Order Submitted');
                         })
                         .catch(cart_error => {
                             if (cart_error) throw cart_error;
@@ -80,16 +79,11 @@ exports.post_order_form = (req, res, next) => {
 };
 
 exports.get_orders = (req, res, next) => {
-    const current_user = req.cookies['user_id'];
 
+    const current_user = req.query.current_user;
     Order.get_orders(current_user)
         .then(result => {
-            res.render('orders',
-                {
-                    page_title: 'Order',
-                    orders: result.rows,
-                    current_user: current_user
-                });
+            res.json(result.rows);
         })
         .catch(error => {
             if (error) throw error;
@@ -98,9 +92,6 @@ exports.get_orders = (req, res, next) => {
 }
 exports.get_order_by_id = (req, res, next) => {
     const order_id = req.params.id;
-    const current_user = req.cookies['user_id'];
-
-    let total;
 
     // get total from an order for rendering
     Order.get_total_from_order(order_id)
@@ -113,17 +104,10 @@ exports.get_order_by_id = (req, res, next) => {
 
     // listing order items from an order
     Order.get_order_items(order_id)
-        .then((result) => {
-            res.render('order_detail',
-                {
-                    page_title: 'Order Detail',
-                    order_items: result.rows,
-                    total: total,
-                    current_user: current_user
-                })
+        .then(result => {
+            res.json(result.rows);
         })
         .catch(error => {
             if (error) throw error;
         });
-
 }

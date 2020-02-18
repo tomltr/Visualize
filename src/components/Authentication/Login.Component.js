@@ -1,19 +1,13 @@
 import React from 'react';
 import { Redirect } from 'react-router';
-import { BrowserRouter as Router, Route } from 'react-router-dom';
-import Cookie from 'js-cookie';
-import Products from '../Products/Products.Component';
 import axios from 'axios';
 
 export default class Login extends React.Component {
     constructor(props) {
         super(props);
-        this.state = {
-
-        }
         this.submitLogin = this.submitLogin.bind(this);
-    }
-    componentDidMount() {
+        this.userNotExists = this.userNotExists.bind(this);
+        this.invalidLogin = this.invalidLogin.bind(this);
     }
 
     submitLogin(e) {
@@ -27,38 +21,82 @@ export default class Login extends React.Component {
             }
         )
             .then(result => {
-                const result_token = result.data.token;
-                const result_id = result.data.user_id;
-                this.props.updateAuth(result_token, result_id);
+                if (result.data.hasOwnProperty('user_error')) {
+                    console.log('user not exists');
+                    this.userNotExists();
+                }
+                else if (result.data.hasOwnProperty('error')) {
+                    console.log('invalid login');
+                    this.invalidLogin();
+                }
+                else {
+                    const result_token = result.data.token;
+                    const result_id = result.data.user_id;
+                    this.props.updateAuth(result_token, result_id);
+                }
 
             })
             .catch(error => {
                 if (error) throw error;
             });
+    }
 
+    userNotExists() {
+        const usernameInput = document.getElementById('usernameLabel');
+        let existingError = document.getElementById('usernameError');
+        usernameInput.nextSibling.value = '';
+
+        if (existingError) {
+            usernameInput.parentElement.removeChild(existingError);
+            existingError = null;
+        }
+
+        if (!existingError) {
+            let error = document.createElement("p");
+            error.innerHTML = "** Username does not exists **";
+            error.setAttribute('style', 'color: red');
+            error.setAttribute('id', 'usernameError');
+            usernameInput.parentElement.insertBefore(error, usernameInput);
+        }
+    }
+
+    invalidLogin() {
+        const usernameInput = document.getElementById('usernameLabel');
+        let existingError = document.getElementById('usernameError');
+        const passwordInput = document.getElementById('password_input');
+        passwordInput.value = ''
+
+        if (existingError) {
+            usernameInput.parentElement.removeChild(existingError);
+            existingError = null;
+        }
+
+        if (!existingError) {
+            let error = document.createElement("p");
+            error.innerHTML = "** Invalid username/password **";
+            error.setAttribute('style', 'color: red');
+            error.setAttribute('id', 'usernameError');
+            usernameInput.parentElement.insertBefore(error, usernameInput);
+        }
 
     }
 
     render() {
         return (
-
-            <div>
-                {this.props.current_user !== null && this.props.token !== null ?
+            <div className="product-list">
+                {this.props.current_user !== '' && this.props.token !== '' ?
                     <Redirect to="/" />
                     :
-
                     <form method="POST" onSubmit={this.submitLogin}>
-                        <label>UserName:</label>
-                        <input type="text" name="username" id="username_input"></input>
-                        <label>Password:</label>
-                        <input type="password" name="password" id="password_input"></input>
-                        <button type="submit">Log In</button>
+                        <label id="usernameLabel">UserName:</label>
+                        <input type="text" name="username" id="username_input" required ></input>
+                        <p><label>Password:</label>
+                            <input type="password" name="password" id="password_input" required ></input>
+                        </p>
+                        <button className="btn btn-success" type="submit">Log In</button>
                     </form>
                 }
-
             </div>
-
         )
     }
-
 }

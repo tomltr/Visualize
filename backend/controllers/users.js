@@ -2,7 +2,6 @@ const User = require('../models/users');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const secret_key = require('../config');
-const db = require('../util/database');
 
 exports.get_register_user = (req, res, next) => {
     const current_user = req.cookies['user_id'];
@@ -35,7 +34,6 @@ exports.post_register_user = (req, res, next) => {
                                 user_id: user_result.rows[0].user_id,
                             }
                             res.json(registered_user);
-                            console.log(`user registered: ${user_result.rows[0].user_id}`);
                         })
                         .catch(user_error => {
                             if (user_error) {
@@ -44,7 +42,17 @@ exports.post_register_user = (req, res, next) => {
                         });
                 })
                 .catch(err => {
-                    throw err;
+                    if (err) {
+                        let error_message = {};
+                        if (err.message.includes('email')) {
+                            error_message.email = 'email exists';
+                        }
+                        else if (err.message.includes('username')) {
+                            error_message.username = 'username exists';
+                        }
+                        res.json(error_message);
+
+                    }
                 });
         }
     });
@@ -59,37 +67,30 @@ exports.get_login = (req, res, next) => {
 exports.post_login = async (req, res, next) => {
     console.log(`calling post_login`);
     const username = req.body.username;
-    const current_user = req.cookies['user_id'];
     const request_data = await User.get_user(username);
     const confirmed_data = await (request_data);
 
     // If username not exists
+    let json_object = {};
     if (confirmed_data.rows[0] === undefined) {
-        console.log(`username ${username} not exists`);
-        res.json({ 'user': 'User not exists' });
+        json_object.user_error = 'User does not exists';
+        res.json(json_object);
     }
 
 
     // When a username is valid
     else {
-        console.log(`username ${username}`);
 
         await bcrypt.compare(req.body.password, confirmed_data.rows[0].password, (err, result) => {
 
             // Wrong password
-            let json_object = {};
             if (!result) {
-                console.log(`invalid password: ${req.body.password}`);
-                res.render('login', {
-                    page_title: 'Login',
-                    error: 'password',
-                    current_user: current_user
-                });
+                json_object.error = 'invalid username/password';
+                res.json(json_object);
             }
 
             // Valid password, signs and adds token and user_id
             else {
-                console.log(`valid password: ${req.body.password}`);
                 jwt.sign(
                     { id: confirmed_data.rows[0].user_id },
                     secret_key,
@@ -108,5 +109,5 @@ exports.post_login = async (req, res, next) => {
 exports.get_logout = (req, res, next) => {
     res.clearCookie('token');
     res.clearCookie('user_id');
-    res.redirect('/');
+    // res.redirect('/');
 }

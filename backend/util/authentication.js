@@ -2,8 +2,8 @@ const jwt = require('jsonwebtoken');
 const secret_key = require('../config');
 
 exports.authenticated = ((req, res, next) => {
-
-    const token = req.cookies['token'];
+    const token = req.body.token;
+    //console.log(`token: ${token}`);
     if (token === undefined) {
         res.redirect('/login');
     }
@@ -21,7 +21,8 @@ exports.authenticated = ((req, res, next) => {
 });
 
 exports.unauthenticated = ((req, res, next) => {
-    const token = req.cookies['token'];
+    const token = req.body.token;
+    //console.log(`token: ${token}`);
     if (token === undefined) {
         next();
     }

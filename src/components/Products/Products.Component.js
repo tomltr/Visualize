@@ -2,9 +2,9 @@ import React from 'react';
 import Product from '../Products/Product.Component';
 import axios from 'axios';
 import './Products.css';
-import Cookies from 'js-cookie';
 
 export default class Products extends React.Component {
+    _isMounted = false;
     constructor(props) {
         super(props);
         this.state = {
@@ -14,6 +14,7 @@ export default class Products extends React.Component {
     }
 
     componentDidMount() {
+        this._isMounted = true;
         axios.get('http://localhost:5000')
             .then(response => {
                 this.setState({ products: response.data.map(product => product) })
@@ -21,7 +22,10 @@ export default class Products extends React.Component {
             .catch(error => {
                 console.log(`error: ${error}`);
             })
+    }
 
+    componentWillUnmount() {
+        this._isMounted = false;
     }
 
     render() {
@@ -36,6 +40,7 @@ export default class Products extends React.Component {
                         image={product.image_path}
                     />
                 ))}
+                <footer>** All images are from <em>Pixabay</em> **</footer>
             </div>
         );
     }

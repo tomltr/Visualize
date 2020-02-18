@@ -11,8 +11,8 @@ module.exports = class Cart {
         return db.query('INSERT INTO cart (cart_id, user_id) VALUES ($1, $2)', [this.cart_id, this.user_id]);
     };
 
-    static get_cart_item_from_product_id(product_id) {
-        return db.query('SELECT * FROM cart_item WHERE product_id=$1', [product_id]);
+    static get_cart_item_from_product_id(cart_id, product_id) {
+        return db.query('SELECT * FROM cart_item WHERE cart_id = $1 AND product_id=$2', [cart_id, product_id]);
     }
 
     static increment_cart_item(cart_item_id) {
@@ -24,8 +24,8 @@ module.exports = class Cart {
     }
 
     // cart POST - update cart item
-    static update_cart_item(quantity, product_id) {
-        return db.query('UPDATE cart_item SET quantity=$1 WHERE product_id=$2', [quantity, product_id]);
+    static update_cart_item(quantity, product_id, cart_item_id) {
+        return db.query('UPDATE cart_item SET quantity=$1 WHERE cart_item_id = $2 AND product_id=$3', [quantity, cart_item_id, product_id]);
     };
 
     // cart GET - get cart items
@@ -34,7 +34,7 @@ module.exports = class Cart {
     }
 
     static get_cart_items(cart_id) {
-        return db.query('SELECT cart_id, cart_item.product_id, product_title, price, image_path, quantity FROM cart_item, product WHERE cart_item.cart_id = $1 AND cart_item.product_id = product.product_id', [cart_id]);
+        return db.query('SELECT cart_id, cart_item_id, cart_item.product_id, product_title, price, image_path, quantity FROM cart_item, product WHERE cart_item.cart_id = $1 AND cart_item.product_id = product.product_id', [cart_id]);
     }
 
     // Other
@@ -53,5 +53,9 @@ module.exports = class Cart {
 
     static delete_cart(cart_id) {
         return db.query('DELETE FROM cart WHERE cart_id=$1', [cart_id]);
+    }
+
+    static delete_cart_item(cart_item_id) {
+        return db.query('DELETE FROM cart_item WHERE cart_item_id=$1', [cart_item_id]);
     }
 }

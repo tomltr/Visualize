@@ -1,9 +1,9 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
 import axios from 'axios';
 import './Products.css';
 
 export default class ProductDetail extends React.Component {
+    _isMounted = false;
     constructor(props) {
         super(props);
         this.state = {
@@ -12,11 +12,14 @@ export default class ProductDetail extends React.Component {
             title: '',
             image: '',
             price: '',
-            date_created: ''
+            date_created: '',
+
         }
+        this.addToCart = this.addToCart.bind(this);
     }
 
     componentDidMount() {
+        this._isMounted = true;
         axios.get(`http://localhost:5000/product/` + this.state.product_id)
             .then(response => {
                 const product = response.data[0];
@@ -25,6 +28,15 @@ export default class ProductDetail extends React.Component {
             .catch(error => {
                 console.log(`error: ${error}`);
             })
+    }
+
+    componentWillUnmount() {
+        this._isMounted = false;
+    }
+
+
+    addToCart(e) {
+        this.props.addToCart(e, this.state.product_id, this.state.title);
     }
 
     render() {
@@ -36,13 +48,17 @@ export default class ProductDetail extends React.Component {
                 <p>${this.state.price}</p>
                 <p>Created: {this.state.date_created.split('T')[0]}</p>
 
-                <Link to='/add-to-cart/'>
-                    <button>Add to Cart</button>
-                </Link>
+                {this.props.current_user === '' ?
+                    <form action="/login">
+                        <button type="submit">Add to Cart</button>
+                    </form>
+                    :
+                    <form onSubmit={this.addToCart}>
+
+                        <button type="submit">Add To Cart</button>
+                    </form>
+                }
             </div>
         );
     }
 }
-
-
-

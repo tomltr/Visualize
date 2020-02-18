@@ -8,11 +8,7 @@
         <div class="product-list">
 
             <% if (cart_exist ) { %>
-
-
-
             <% for (let cart_item of cart_items ) { %>
-
             <h2><%= cart_item.product_title %></h2>
             <div>
                 <img src="../imgs/<%= cart_item.image_path %>" width="250px" height="250px"
@@ -23,8 +19,6 @@
                 <%= cart_item.price %>
 
                 <form method="POST">
-
-
                     <input type="hidden" name="current_user" id="current_user" value="<%= current_user %>">
                     <input type="hidden" name="product_id" id="product_id" value="<%= cart_item.product_id %>">
                     <input type="number" name="cart_item_quantity" id="cart_item_quantity"

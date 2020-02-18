@@ -27,3 +27,13 @@
 {
     transform: scale(1.2);
 }
+
+.add-product-form
+{
+    text-align: center;
+}
+
+footer
+{
+    color: rgb(0, 255, 0);
+}
