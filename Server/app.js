@@ -10,14 +10,13 @@ app.use(cookie_parser());
 
 
 // Using EJS template
-app.set('view engine', 'ejs');
-app.set('views', 'views');
+//app.set('view engine', 'ejs');
+//app.set('views', 'views');
 
 // using body parser to parse request
 app.use(body_parser.urlencoded({ extended: false }));
 app.use(express.json());
 
-app.use(express.static(path.join(__dirname, 'public')));
 
 // Routing from different routes
 
@@ -31,6 +30,7 @@ app.use(product_routes);
 app.use(cart_routes);
 app.use(order_routes);
 
+app.use(express.static(path.join(__dirname, 'public')));
 if (true) {
     app.use(express.static('build'));
     app.get('/*', (req, res) => {
@@ -43,7 +43,6 @@ const http = require('http');
 
 const normalizedPort = val => {
     let port = parseInt(val, 10);
-    console.log(`\n calling normalize port: type-> ${typeof port}, port: ${port}`);
 
     if (isNaN(port)) {
         return val;
@@ -58,18 +57,9 @@ const normalizedPort = val => {
 }
 
 const port = normalizedPort(process.env.PORT || '5010');
-console.log(`port: ${port} with type ${typeof port}`);
 app.set('port', port);
 
 const server = http.createServer(app);
 
 server.listen(port);
 
-// app.get('/invalid-request', (req, res) => {
-//     const current_user = req.cookies['user_id'];
-//     res.render('400',
-//         {
-//             page_title: 'Page Not Found',
-//             current_user: current_user
-//         });
-// });
