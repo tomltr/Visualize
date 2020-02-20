@@ -1,7 +1,7 @@
 // Creating a pool connection from postgresql
 const Pool = require('pg').Pool;
 const pool = new Pool({
-    user: 'user',
+    user: '',
     host: 'host',
     database: 'database',
     password: 'password',

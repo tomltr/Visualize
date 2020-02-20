@@ -49,7 +49,6 @@ const normalizedPort = val => {
     }
 
     if (port >= 0) {
-        console.log(`${port} is greater than zero`);
         return port;
     }
 

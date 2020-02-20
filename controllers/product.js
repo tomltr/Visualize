@@ -16,7 +16,7 @@ exports.get_product = (req, res, next) => {
 
     const id = req.params.id;
     Product.get_product(id)
-        .then((result) => {
+        .then(result => {
             res.json(result.rows);
         })
         .catch((error) => {
@@ -95,10 +95,11 @@ exports.post_add_product = (req, res, next) => {
                     res.json(result.rows);
                 })
                 .catch(error => {
-
-                    if (error) {
-                        throw error;
-                    }
+                    errorMessage.title = error;
+                    console.log(`error: ${errorMessage.title}`);
+                    // if (error) {
+                    //     throw error;
+                    // }
                 });
         }
     });
