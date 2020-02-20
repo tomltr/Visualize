@@ -9,9 +9,6 @@ app.use(cors());
 app.use(cookie_parser());
 
 
-// Using EJS template
-//app.set('view engine', 'ejs');
-//app.set('views', 'views');
 
 // using body parser to parse request
 app.use(body_parser.urlencoded({ extended: false }));

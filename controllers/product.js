@@ -95,11 +95,10 @@ exports.post_add_product = (req, res, next) => {
                     res.json(result.rows);
                 })
                 .catch(error => {
-                    errorMessage.title = error;
-                    console.log(`error: ${errorMessage.title}`);
-                    // if (error) {
-                    //     throw error;
-                    // }
+                    if (error.message.includes('title')) {
+                        errorMessage.title = '** Product already exists **';
+                    }
+                    res.json(errorMessage.title);
                 });
         }
     });
