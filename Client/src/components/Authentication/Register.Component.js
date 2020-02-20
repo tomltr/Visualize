@@ -5,6 +5,9 @@ import { Redirect } from 'react-router-dom';
 export default class Register extends React.Component {
     constructor(props) {
         super(props);
+	this.state = {
+		redirectToLogin: false
+	}
         this.register = this.register.bind(this);
         this.validateAddress = this.validateAddress.bind(this);
         this.validateUsername = this.validateUsername.bind(this);
@@ -75,10 +78,6 @@ export default class Register extends React.Component {
             return fullNameInput.value;
         }
     }
-
-
-
-
     validateAddress() {
         const addressInput = document.getElementById('address_input');
         const minRequired = this.validMin(addressInput.value);
@@ -335,7 +334,7 @@ export default class Register extends React.Component {
                 password: password
             };
 
-            axios.post("http://18.220.250.26:5010/register", newUser)
+            axios.post("http://<aws-public-ip>:port/register", newUser)
                 .then(result => {
                     if (result.data.hasOwnProperty('username')) {
                         this.existingUsername();
@@ -343,25 +342,22 @@ export default class Register extends React.Component {
                     else if (result.data.hasOwnProperty('email')) {
                         this.existingEmail();
                     }
-                    this.props.updateAuth('', result.data.user_id);
+		    else
+			{
+		    		this.setState({redirectToLogin: true});
+			}
+		    //this.props.updateAuth('', result.data.user_id);
                 })
                 .catch(error => {
                     if (error) throw error;
                 });
         }
-
-
     }
-
-
-
 
     render() {
         return (
             <div>
-                {this.props.current_user ?
-                    <Redirect to="/login" />
-                    :
+                {!this.state.redirectToLogin ?
                     <div className="text-center">
                         <form method="POST" onSubmit={this.register}>
                             <label>Full Name:</label>
@@ -391,6 +387,9 @@ export default class Register extends React.Component {
                         </form>
 
                     </div>
+			:
+
+			<Redirect to="/login" />
                 }
             </div>
         )

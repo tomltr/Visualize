@@ -1,14 +1,10 @@
 const express = require('express');
 const body_parser = require('body-parser');
-const cookie_parser = require('cookie-parser');
 const path = require('path');
 const cors = require('cors');
 
 const app = express();
 app.use(cors());
-app.use(cookie_parser());
-
-
 
 // using body parser to parse request
 app.use(body_parser.urlencoded({ extended: false }));
@@ -32,27 +28,13 @@ if (true) {
     app.use(express.static('build'));
     app.get('/*', (req, res) => {
         res.sendFile(path.resolve(__dirname, 'build', 'index.html'));
-    })
+    });
 
 }
 
 const http = require('http');
 
-const normalizedPort = val => {
-    let port = parseInt(val, 10);
-
-    if (isNaN(port)) {
-        return val;
-    }
-
-    if (port >= 0) {
-        return port;
-    }
-
-    return false;
-}
-
-const port = normalizedPort(process.env.PORT || '5010');
+const port = (process.env.PORT || '5010');
 app.set('port', port);
 
 const server = http.createServer(app);

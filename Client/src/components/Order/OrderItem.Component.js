@@ -14,7 +14,7 @@ export default class OrderItem extends React.Component {
 
     componentDidMount() {
         this._isMounted = true;
-        axios.get(`http://18.220.250.26:5010/order/${this.props.order_id}`)
+        axios.get(`http://<aws-public-ip>:port/order/${this.props.order_id}`)
             .then(result => {
                 this.setState({ order_items: result.data });
             })
@@ -44,7 +44,7 @@ export default class OrderItem extends React.Component {
                             {this.state.order_items.map(item => (
                                 <div key={item.order_item_id}>
                                     <h2>{item.product_title}</h2>
-                                    <img src={`http://18.220.250.26:5010/imgs/${item.image_path}`} width="250px" height="250px" alt={item.product_title}></img>
+                                    <img src={`http://<aws-public-ip>:port/imgs/${item.image_path}`} width="250px" height="250px" alt={item.product_title}></img>
                                     <h3>Price: ${item.price}</h3>
                                     <h4>Quantity: {item.quantity}</h4>
                                     <h5>Status: {item.status}</h5>

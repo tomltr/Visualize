@@ -14,7 +14,7 @@ export default class Login extends React.Component {
         e.preventDefault();
         const username = document.getElementById('username_input').value;
         const password = document.getElementById('password_input').value;
-        axios.post('http://18.220.250.26:5010/login',
+        axios.post('http://<aws-public-ip>:port/login',
             {
                 username: username,
                 password: password

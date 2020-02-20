@@ -16,7 +16,7 @@ export default class Order extends React.Component {
     componentDidMount() {
         this._isMounted = true;
         if (this.props.current_user !== '') {
-            axios.get('http://18.220.250.26:5010/orders', {
+            axios.get('http://<aws-public-ip>:port/orders', {
                 params:
                 {
                     current_user: this.props.current_user,
@@ -38,7 +38,7 @@ export default class Order extends React.Component {
     render() {
         return (
             <div>
-                {this.props.current_user !== '' ?
+                {this.props.current_user !== '' && this.props.token !== '' ?
                     <div style={{ textAlign: 'center' }}>
                         <h3>Orders History</h3>
                         {this.state.order_items.map((item, index) =>

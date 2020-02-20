@@ -9,7 +9,7 @@ const Product = (props) => {
             </div>
             <div className="product-image">
                 <Link to={`/product/${props.id}`}>
-                    <img src={`http://18.220.250.26:5010/imgs/${props.image}`} width="250px" height="250px" alt={props.title}></img>
+                    <img src={`http://<aws-public-ip>:port/imgs/${props.image}`} width="250px" height="250px" alt={props.title}></img>
                 </Link>
             </div>
             <div className="product-price">

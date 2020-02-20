@@ -79,9 +79,7 @@ export default class AddProduct extends React.Component {
             }
             priceInput.setAttribute("style", "border:default");
             return priceInput.value;
-
         }
-
 
     }
 
@@ -171,7 +169,7 @@ export default class AddProduct extends React.Component {
             formData.append('title', title);
             formData.append('price', price);
 
-            axios.post('http://18.220.250.26:5010/add-product', formData)
+            axios.post('http://<aws-public-ip>:port/add-product', formData)
                 .then(result => {
                     if (result.data.hasOwnProperty('error')) {
                         this.uploadedError(result.data.error);
@@ -196,7 +194,7 @@ export default class AddProduct extends React.Component {
                 {this.state.redirectToHome ?
                     <Redirect to="/" />
                     :
-                    this.props.current_user !== '' ?
+                    this.props.current_user !== '' && this.props.token !== '' ?
                         <div className="add-product-form">
                             <form method="POST" encType="multipart/form-data" onSubmit={this.onFormSubmit}>
                                 <label id="titleLabel">Title:</label>

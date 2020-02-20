@@ -2,38 +2,6 @@ const Cart = require('../models/cart');
 const Order = require('../models/order');
 const uuidv4 = require('uuid/v4');
 
-exports.get_order_form = (req, res, next) => {
-    const id = req.cookies['user_id'];
-
-    // get user's cart then display its items in an order form
-    Cart.get_cart_from_user_id(id)
-        .then(result => {
-            const cart_id = result.rows[0].cart_id;
-
-            Cart.get_cart_item_detailed(cart_id)
-                .then(cart_result => {
-                    let total = 0;
-                    for (let i = 0; i < cart_result.rowCount; ++i) {
-                        total += cart_result.rows[i].price * cart_result.rows[i].quantity;
-                    }
-
-                    res.render('order_form', {
-                        page_title: 'Order Form',
-                        cart_items: cart_result.rows,
-                        total: parseFloat(total).toFixed(2),
-                        current_user: id
-                    })
-
-                })
-                .catch(cart_error => {
-                    if (cart_error) throw cart_error;
-                });
-        })
-        .catch(error => {
-            if (error) throw error;
-        })
-
-}
 exports.post_order_form = (req, res, next) => {
 
     const user_id = req.body.user;

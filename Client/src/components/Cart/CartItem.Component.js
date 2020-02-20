@@ -44,7 +44,7 @@ export default class Cart extends React.Component {
             <div className="product-list">
                 <h3>{this.props.title}</h3>
                 <h3>${this.props.price}</h3>
-                <img src={`http://18.220.250.26:5010/imgs/${this.props.image}`} width="250px" height="250px" alt={this.props.title}></img>
+                <img src={`http://<aws-public-ip>:port/imgs/${this.props.image}`} width="250px" height="250px" alt={this.props.title}></img>
                 {this.props.updateQuantity !== '' ?
                     <div>
                         <form onSubmit={this.updateCart}>

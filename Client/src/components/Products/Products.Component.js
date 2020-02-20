@@ -15,7 +15,7 @@ export default class Products extends React.Component {
 
     componentDidMount() {
         this._isMounted = true;
-        axios.get('http://18.220.250.26:5010/products')
+        axios.get('http://<aws-public-ip>:port/products')
             .then(response => {
                 this.setState({ products: response.data.map(product => product) })
             })

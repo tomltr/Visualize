@@ -26,16 +26,6 @@ exports.get_product = (req, res, next) => {
         });
 }
 
-exports.get_add_product = (req, res, next) => {
-    const current_user = req.cookies['user_id'];
-    res.render('add-product',
-        {
-            page_title: 'Add Product',
-            current_user: current_user
-        });
-};
-
-
 const public_images = "./public/imgs";
 const storage = multer.diskStorage({
     destination: (req, file, callback) => {
@@ -68,27 +58,22 @@ const multer_object =
 const upload = multer(multer_object).single('productImage');
 exports.post_add_product = (req, res, next) => {
 
-    // const upload = multer().single('productImage');
-
     let artist_id;
     let product_title;
     let price;
     let image_path;
     let errorMessage = {};
 
-
     upload(req, res, function (err) {
         if (err) {
             errorMessage.error = err.message;
-            console.log(`error on upload`);
             res.json(errorMessage);
         }
         else {
-            console.log(`update on upload`);
             artist_id = req.body.artist_id;
             product_title = req.body.title;
             price = req.body.price;
-            image_path = req.file.path.split('\\')[2];
+            image_path = req.file.path.split('/')[2];
             const product = new Product(artist_id, product_title, price, image_path);
             product.add_product()
                 .then(result => {
@@ -98,7 +83,7 @@ exports.post_add_product = (req, res, next) => {
                     if (error.message.includes('title')) {
                         errorMessage.title = '** Product already exists **';
                     }
-                    res.json(errorMessage.title);
+                    res.json(errorMessage);
                 });
         }
     });

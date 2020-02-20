@@ -34,5 +34,5 @@
       "last 1 safari version"
     ]
   },
-  "proxy": "http://18.220.250.26:5010"
+  "proxy": "http://<aws-public-ip>:port"
 }

@@ -3,7 +3,6 @@ const secret_key = require('../config');
 
 exports.authenticated = ((req, res, next) => {
     const token = req.body.token;
-    //console.log(`token: ${token}`);
     if (token === undefined) {
         res.redirect('/login');
     }

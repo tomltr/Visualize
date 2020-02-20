@@ -20,7 +20,7 @@ export default class OrderForm extends React.Component {
     componentDidMount() {
         this._isMounted = true;
         if (this.props.current_user !== '') {
-            axios.get('http://18.220.250.26:5010/cart', {
+            axios.get('http://<aws-public-ip>:port/cart', {
                 params:
                 {
                     current_user: this.props.current_user,
@@ -96,7 +96,7 @@ export default class OrderForm extends React.Component {
         const cartId = this.props.cart_id;
 
         if (creditCardNumber) {
-            axios.post('http://18.220.250.26:5010/order_form', {
+            axios.post('http://<aws-public-ip>:port/order_form', {
                 user: currentUser,
                 payment_method: paymentMethod.value,
                 credit_card_number: creditCardNumber,
@@ -113,10 +113,7 @@ export default class OrderForm extends React.Component {
                 });
         }
 
-
     }
-
-
 
     render() {
         return (

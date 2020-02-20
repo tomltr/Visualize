@@ -20,7 +20,7 @@ export default class ProductDetail extends React.Component {
 
     componentDidMount() {
         this._isMounted = true;
-        axios.get(`http://18.220.250.26:5010/product/` + this.state.product_id)
+        axios.get(`http://<aws-public-ip>:port/product/` + this.state.product_id)
             .then(response => {
                 const product = response.data[0];
                 this.setState({ artist: product.username, title: product.product_title, image: product.image_path, price: product.price, date_created: product.date_created });
@@ -44,7 +44,7 @@ export default class ProductDetail extends React.Component {
             <div className="product-list">
                 <h2>{this.state.title}</h2>
                 <p><em>by {this.state.artist}</em></p>
-                <img src={`http://18.220.250.26:5010/imgs/${this.state.image}`} width="250px" height="250px" alt={this.state.title}></img>
+                <img src={`http://<aws-public-ip>:port/imgs/${this.state.image}`} width="250px" height="250px" alt={this.state.title}></img>
                 <p>${this.state.price}</p>
                 <p>Created: {this.state.date_created.split('T')[0]}</p>
 

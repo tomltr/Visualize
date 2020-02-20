@@ -21,7 +21,7 @@ export default class Cart extends React.Component {
     componentDidMount() {
         this._isMounted = true;
         if (this.props.current_user !== '') {
-            axios.get('http://18.220.250.26:5010/cart', {
+            axios.get('http://<aws-public-ip>:port/cart', {
                 params:
                 {
                     current_user: this.props.current_user,
@@ -52,7 +52,7 @@ export default class Cart extends React.Component {
 
     updateQuantity(index, cart_item_id, newQuantity) {
         const product_id = this.state.cart_items[index].product_id;
-        axios.post('http://18.220.250.26:5010/cart', {
+        axios.post('http://<aws-public-ip>:port/cart', {
             product_id: product_id,
             cart_item_id: cart_item_id,
             cart_item_quantity: newQuantity,
@@ -77,7 +77,7 @@ export default class Cart extends React.Component {
     }
 
     deleteItem(cart_item_id) {
-        axios.post(`http://18.220.250.26:5010/delete-cart-item/${cart_item_id}`)
+        axios.post(`http://<aws-public-ip>:port/delete-cart-item/${cart_item_id}`)
             .then(result => {
                 this.setState({ cart_items: this.state.cart_items.filter(item => item.cart_item_id !== cart_item_id) });
                 this.updateTotal();
@@ -88,7 +88,7 @@ export default class Cart extends React.Component {
     render() {
         return (
             <div>
-                {this.props.current_user !== '' ?
+                {this.props.current_user !== '' && this.props.token !== '' ?
                     this.state.total === '0.00' ?
                         <div style={{ textAlign: 'center' }}>
                             <h3>Empty Cart</h3>

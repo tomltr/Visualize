@@ -55,7 +55,7 @@ export default class App extends React.Component {
   addToCart(event, product_id, product_title) {
     event.preventDefault();
     alert(`${product_title} added to cart`);
-    axios.post(`http://18.220.250.26:5010/add-to-cart`,
+    axios.post(`http://<aws-public-ip>:port/add-to-cart`,
       {
         token: this.state.token,
         cart_id: this.state.cart_id,
@@ -84,11 +84,11 @@ export default class App extends React.Component {
         } />
 
         <Route path="/register" render={() =>
-          <Register current_user={this.state.current_user} updateAuth={this.updateAuth} />
+          <Register current_user={this.state.current_user} token={this.state.token} updateAuth={this.updateAuth} />
         } />
 
         <Route path="/add-product" render={() =>
-          <AddProduct current_user={this.state.current_user} />
+          <AddProduct current_user={this.state.current_user} token={this.state.token} />
         } />
 
         <Route path="/cart" render={() =>
@@ -108,7 +108,7 @@ export default class App extends React.Component {
         />
 
         <Route path="/order"
-          render={props => <Order current_user={this.state.current_user} {...props} />}
+          render={props => <Order current_user={this.state.current_user} token={this.state.token} {...props} />}
         />
 
       </Router>

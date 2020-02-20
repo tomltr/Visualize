@@ -3,15 +3,6 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const secret_key = require('../config');
 
-exports.get_register_user = (req, res, next) => {
-    const current_user = req.cookies['user_id'];
-    res.render('register',
-        {
-            page_title: 'Register',
-            current_user: current_user
-        });
-}
-
 exports.post_register_user = (req, res, next) => {
     const full_name = req.body.fullName;
     const username = req.body.username;
@@ -45,10 +36,10 @@ exports.post_register_user = (req, res, next) => {
                     if (err) {
                         let error_message = {};
                         if (err.message.includes('email')) {
-                            error_message.email = 'email exists';
+                            error_message.email = '** email already exists **';
                         }
                         else if (err.message.includes('username')) {
-                            error_message.username = 'username exists';
+                            error_message.username = '** username already exists **';
                         }
                         res.json(error_message);
 
@@ -59,13 +50,11 @@ exports.post_register_user = (req, res, next) => {
 }
 
 exports.get_login = (req, res, next) => {
-    console.log(`calling get_login`);
     const current_user = req.cookies['user_id'];
     res.json({ 'current_user': current_user });
 }
 
 exports.post_login = async (req, res, next) => {
-    console.log(`calling post_login`);
     const username = req.body.username;
     const request_data = await User.get_user(username);
     const confirmed_data = await (request_data);
@@ -106,8 +95,3 @@ exports.post_login = async (req, res, next) => {
     }
 }
 
-exports.get_logout = (req, res, next) => {
-    res.clearCookie('token');
-    res.clearCookie('user_id');
-    // res.redirect('/');
-}
