@@ -49,11 +49,6 @@ exports.post_register_user = (req, res, next) => {
     });
 }
 
-exports.get_login = (req, res, next) => {
-    const current_user = req.cookies['user_id'];
-    res.json({ 'current_user': current_user });
-}
-
 exports.post_login = async (req, res, next) => {
     const username = req.body.username;
     const request_data = await User.get_user(username);
