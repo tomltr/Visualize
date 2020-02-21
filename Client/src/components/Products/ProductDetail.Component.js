@@ -50,7 +50,7 @@ export default class ProductDetail extends React.Component {
 
                 {this.props.current_user === '' ?
                     <form action="/login">
-                        <button type="submit">Add to Cart</button>
+                        <button className ="btn btn-info" type="submit">Add to Cart</button>
                     </form>
                     :
                     <form onSubmit={this.addToCart}>
